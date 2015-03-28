@@ -20,7 +20,7 @@ class PackedDate(val value: Int) extends AnyVal {
 
   def asDays: Days = Days(day, month, year)
 
-  def toStr: String = s"$year/$month/$day"
+  override def toString: String = s"$year/$month/$day"
 }
 
 object PackedDate {

@@ -5,7 +5,7 @@ import java.util.Calendar
 /**
  * Value class that represents base dates without a time or timezone.
  * Intended for fast arithmetic, avoidance of allocation and
- * compact JSON represee
+ * compact JSON representation
  */
 class Days(val dayNumber: Int) extends AnyVal {
 
@@ -61,11 +61,16 @@ class Days(val dayNumber: Int) extends AnyVal {
   def firstDayOfNextMonth: Days = lastDayOfThisMonth.addDays(1)
 
   /** Next instance of the given day of week, including this date */
-  def nextWeekday(dow: Int): Days = {
+  def nextOccurrenceOf(dow: Int): Days = {
     val x = dowNumber - 1
     val diff = ((dow - 1 - x) + 7) % 7
     addDays(diff)
   }
+
+  /** Next instance of the given day of week, including this date */
+  def nextOccurrenceOf(dow: DayOfWeek): Days = nextOccurrenceOf(dow.day)
+
+  override def toString: String = s"$dayOfMonth/$month/$year"
 }
 
 /** Day of week constants */
