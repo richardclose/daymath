@@ -8,9 +8,15 @@ import java.time.LocalDate
  */
 object Jdk8 {
 
-  def localDateAsDays(ld: LocalDate): Days = {
+  def toDays(ld: LocalDate): Days = {
     Days(ld.getDayOfMonth, ld.getMonthValue, ld.getYear)
   }
+
+  def toLocalDate(days: Days): LocalDate = {
+    val pd = days.asPackedDate
+    LocalDate.of(pd.year, pd.month, pd.day)
+  }
+
 }
 
 

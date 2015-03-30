@@ -9,7 +9,11 @@ import java.util.Calendar
  */
 class Days(val dayNumber: Int) extends AnyVal {
 
-  /** As milliseconds since 1/1/1970 */
+  /**
+   * As milliseconds since 1/1/1970
+   *
+   * Probably wrong, because of leap-seconds and such. Need to check.
+   */
   def asMillis: Long = (dayNumber  - Days.StartOfUnixEpoch) * Days.MillisPerDay
 
 

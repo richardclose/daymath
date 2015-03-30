@@ -1,27 +1,49 @@
-import org.phasanix.daymath.{Jdk7, Days}
+import java.time.LocalDate
+
+import org.phasanix.daymath.{Jdk8, Jdk7, Days}
 import org.scalatest._
-import java.util.Calendar
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 
 class DaysSpec extends FlatSpec with Matchers {
 
-  val dfmt = new SimpleDateFormat("yyyy/MM/dd")
+  val jdk7dfmt = new SimpleDateFormat("yyyy/MM/dd z")
+  val utc = TimeZone.getTimeZone("UTC")
 
-  "Days" should "convert correctly" in {
+  val dates = Seq(
+    "1844/11/11",
+    "2011/01/11",
+    "2015/03/25",
+    "2015/03/29",
+    "2015/03/30",
+    "2015/03/31",
+    "2015/04/01",
+    "2022/02/03",
+    "2045/03/04")
 
-      val tz = TimeZone.getDefault
+  "Days" should "convert correctly from java.util.Date to Days" in {
 
-      val dates = Seq("1844/11/11", "2011/1/11", "2015/3/25", "2015/3/29", "2015/3/30", "2015/3/31", "2015/4/1", "2022/2/3")
-
-      val diffs = for (dstr <- dates) yield {
-        val d = dfmt.parse(dstr)
-        val days = Jdk7(d, tz)
-        (dstr, days.asMillis - d.getTime)
-      }
-
-      for ((date, diff) <- diffs) println(s"$date -- $diff")
-
+    val diffs = for (dstr <- dates) yield {
+      val d = jdk7dfmt.parse(dstr + " UTC")
+      val days = Jdk7.toDays(d, utc)
+      (dstr, days.asMillis - d.getTime)
     }
+
+    diffs.filter(_._2 != 0L) shouldBe empty
+  }
+
+  it should "convert correctly from java.time.LocalDate to Days" in {
+
+
+    val fmt = java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd")
+
+    val diffs = for (dstr <- dates) yield {
+      val ld = LocalDate.parse(dstr, fmt)
+      val days = Jdk8.toDays(ld)
+      days.dayOfMonth == ld.getDayOfMonth && days.month == ld.getMonthValue && days.year == ld.getYear
+    }
+
+    diffs.filter(_ == false) shouldBe empty
+  }
 
 }

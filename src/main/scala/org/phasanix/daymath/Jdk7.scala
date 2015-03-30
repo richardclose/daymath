@@ -8,7 +8,7 @@ import java.util.{TimeZone, Calendar, Date}
 object Jdk7 {
 
   /** Days j.u.Date */
-  def daysAsDate(days: Days, tz: TimeZone): Date = {
+  def toDate(days: Days, tz: TimeZone): Date = {
     val cal = Calendar.getInstance(tz)
     val pd = days.asPackedDate
     cal.set(Calendar.DAY_OF_MONTH, pd.day)
@@ -20,15 +20,15 @@ object Jdk7 {
   /** Convert j.u.Calendar to Days */
   def toDays(cal: Calendar): Days = Days(cal.get(Calendar.DAY_OF_MONTH), 1 + cal.get(Calendar.MONTH), cal.get(Calendar.YEAR))
 
-  /** Convert milliseconds of the JDK epoch to <code>Days</code> */
-  def apply(millis: Long, tz: TimeZone): Days = {
+  /** Convert milliseconds to <code>Days</code> for the given time zone */
+  def toDays(millis: Long, tz: TimeZone): Days = {
     val cal =  Calendar.getInstance(tz)
     cal.setTimeInMillis(millis)
     toDays(cal)
   }
 
   /** Convert j.u.Date to Days */
-  def apply(d: Date, tz: TimeZone): Days = apply(d.getTime, tz)
+  def toDays(d: Date, tz: TimeZone): Days = toDays(d.getTime, tz)
 
   /** Number of days between the given dates */
   def daysBetween(d1: Date, d2: Date): Int = {
