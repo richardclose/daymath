@@ -104,10 +104,13 @@ object Days {
 
   val DaysOfWeek: Seq[DayOfWeek] = Seq(Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday)
 
+  /** Number of days between two days */
   def daysBetween(d1: Days, d2: Days): Int = d2.dayNumber - d1.dayNumber
 
+  /** Create Days instance from day number */
   def apply(days: Int): Days = new Days(days)
 
+  /** Create Days instance from day, month, year */
   def apply(day: Int, month: Int, year: Int): Days = new Days(toDayNumber(day, month, year))
 
   /** day number to DMY tuple */
@@ -186,41 +189,72 @@ object Days {
     (365 * y1) + y1 / 4 - y1 / 100 + y1 / 400 + (m1 * 306 + 5) / 10 + (d - 1)
   }
 
-  /**
-   * Stream of days between the given dates
-   */
-  def range(start: Days, end: Days, step: Int = 1): Stream[Days] =
-    if (start.after(end)) Stream.empty
-    else start #:: range(start.addDays(step), end, step)
+  private abstract class DaysIterator(start: Days, end: Days) extends Iterator[Days] {
 
-  /**
-   * Stream of weekdays between the given dates
-   */
-  def weekdays(start: Days, end: Days): Stream[Days] = for (d <- range(start, end) if d.isWeekday) yield d
+    protected def move(days: Days): Days
 
+    private var current = start
 
-  /**
-   * Stream of first days of month between the given dates
-   */
-  def monthBoundaries(start: Days, end: Days): Stream[Days] = {
-    val next = start.firstDayOfNextMonth
-    if (!start.before(end)) Stream.empty
-    else start #:: monthBoundaries(next, end)
+    def hasNext: Boolean = !current.after(end)
+
+    def next(): Days = {
+      val ret = current
+      current = move(current)
+      ret
+    }
   }
 
   /**
-   * Stream of monthBoundaries, then the end date.
+   * iterator over range of days
    */
-  def monthBoundariesInclusive(start: Days, end: Days): Stream[Days] =
-    monthBoundaries(start, end) :+ end
+  def iterator(start: Days, end: Days, step: Int = 1): Iterator[Days] = new DaysIterator(start, end) {
+    protected def move(days: Days): Days = days.addDays(step)
+  }
 
   /**
-   * Infinite stream of days, starting at the given date
+   * iterator over range of weekdays
    */
-  def days(start: Days): Stream[Days] = start #:: days(start.addDays(1))
+  def weekdaysIterator(start: Days, end: Days): Iterator[Days] =
+    iterator(start, end).filter(_.isWeekday)
 
   /**
-   * Infinite stream of weekdays, starting at the given date
+   * iterator over first days of month, falling between start and end dates
    */
-  def weekdays(start: Days): Stream[Days] = days(start) filter (_.isWeekday)
+  def monthStartIterator(start: Days, end: Days): Iterator[Days] = new DaysIterator(start.firstDayOfNextMonth, end) {
+    protected def move(days: Days): Days = days.firstDayOfNextMonth
+  }
+
+  /**
+   * iterator over first days of month, including start and end dates
+   */
+  def monthStartIteratorInclusive(start: Days, end: Days): Iterator[Days] = {
+    val it = new DaysIterator(start, end) {
+      protected def move(days: Days): Days = days.firstDayOfNextMonth
+    }
+    if (end.dayOfMonth == 1)
+      it
+    else
+      it ++ Some(end).iterator
+  }
+
+  /**
+   * iterator over first days of month, falling between start and end dates
+   */
+  def monthEndIterator(start: Days, end: Days): Iterator[Days] = new DaysIterator(start.lastDayOfThisMonth, end) {
+    protected def move(days: Days): Days = days.lastDayOfThisMonth
+  }
+
+  /**
+   * iterator over first days of month, including start and end dates
+   */
+  def monthEndIteratorInclusive(start: Days, end: Days): Iterator[Days] = {
+    val it = new DaysIterator(start, end) {
+      protected def move(days: Days): Days = days.lastDayOfThisMonth
+    }
+    if (end == end.lastDayOfThisMonth)
+      it
+    else
+      it ++ Some(end).iterator
+  }
+
 }

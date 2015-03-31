@@ -34,7 +34,6 @@ class DaysSpec extends FlatSpec with Matchers {
 
   it should "convert correctly from java.time.LocalDate to Days" in {
 
-
     val fmt = java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd")
 
     val diffs = for (dstr <- dates) yield {
@@ -44,6 +43,46 @@ class DaysSpec extends FlatSpec with Matchers {
     }
 
     diffs.filter(_ == false) shouldBe empty
+  }
+
+  "month start iterator" should "generate month start dates" in {
+    val xs = Days.monthStartIterator(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
+    println(xs)
+    xs.length shouldBe 3
+    xs.count(_.dayOfMonth == 1) shouldBe xs.length
+  }
+
+  it should "generate month start dates (inclusive)" in {
+    val xs = Days.monthStartIteratorInclusive(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
+    println(xs)
+    xs.length shouldBe 5
+    xs.count(_.dayOfMonth == 1) shouldBe xs.length - 2
+  }
+
+  "month end iterator" should "generate month start dates" in {
+    val xs = Days.monthStartIterator(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
+    println(xs)
+    xs.length shouldBe 3
+    xs.count(_.dayOfMonth == 1) shouldBe xs.length
+  }
+
+  it should "generate month start dates (inclusive)" in {
+    val xs = Days.monthStartIteratorInclusive(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
+    println(xs)
+    xs.length shouldBe 5
+    xs.count(_.dayOfMonth == 1) shouldBe xs.length - 2
+  }
+
+  "month end logic" should "find end of current month" in {
+    val d = Days(12, 4, 2011)
+    d.lastDayOfThisMonth shouldBe Days(30, 4, 2011)
+    val leapYearFeb = Days(4, 2, 2012)
+    leapYearFeb.lastDayOfThisMonth shouldBe Days(29, 2, 2012)
+  }
+
+  it should "identify current day when it is the last of the month" in {
+    val d = Days(31, 3, 2011)
+    d.lastDayOfThisMonth shouldBe d
   }
 
 }
