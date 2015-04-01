@@ -94,10 +94,13 @@ object Saturday extends DayOfWeek(Calendar.SATURDAY, "Saturday")
 object Days {
 
   /** Day number of start of Unix epoch */
-  val StartOfUnixEpoch = toDayNumber(1, 1, 1970)
+  val StartOfUnixEpoch: Int = toDayNumber(1, 1, 1970)
 
   /** Day number of start of modified Julian epoch */
-  val StartOfModifiedJulianEpoch = toDayNumber(16, 11, 1858)
+  val StartOfModifiedJulianEpoch: Int = toDayNumber(16, 11, 1858)
+
+  /** nil value for Days */
+  val Nil: Days = apply(0)
 
   /** Number of milliseconds in a day */
   val MillisPerDay: Long = 1000 * 60 * 60 * 24
@@ -193,14 +196,15 @@ object Days {
 
     protected def move(days: Days): Days
 
-    private var current = start
+    private var _current = Nil // position before start
+    private var _next = start
 
-    def hasNext: Boolean = !current.after(end)
+    def hasNext: Boolean = !_next.after(end)
 
     def next(): Days = {
-      val ret = current
-      current = move(current)
-      ret
+      _current = _next
+      _next = move(_next)
+      _current
     }
   }
 
@@ -234,22 +238,28 @@ object Days {
     if (end.dayOfMonth == 1)
       it
     else
-      it ++ Some(end).iterator
+      it ++ Iterator.single(end)
   }
 
   /**
-   * iterator over first days of month, falling between start and end dates
+   * iterator over last days of month, falling between start and end dates
    */
   def monthEndIterator(start: Days, end: Days): Iterator[Days] = new DaysIterator(start.lastDayOfThisMonth, end) {
-    protected def move(days: Days): Days = days.lastDayOfThisMonth
+    protected def move(days: Days): Days = {
+      val ldotm = days.lastDayOfThisMonth
+      if (days.before(ldotm)) ldotm else ldotm.addDays(1).lastDayOfThisMonth
+    }
   }
 
   /**
-   * iterator over first days of month, including start and end dates
+   * iterator over last days of month, including start and end dates
    */
   def monthEndIteratorInclusive(start: Days, end: Days): Iterator[Days] = {
     val it = new DaysIterator(start, end) {
-      protected def move(days: Days): Days = days.lastDayOfThisMonth
+      protected def move(days: Days): Days = {
+        val ldotm = days.lastDayOfThisMonth
+        if (days.before(ldotm)) ldotm else ldotm.addDays(1).lastDayOfThisMonth
+      }
     }
     if (end == end.lastDayOfThisMonth)
       it

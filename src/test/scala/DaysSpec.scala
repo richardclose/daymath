@@ -47,30 +47,24 @@ class DaysSpec extends FlatSpec with Matchers {
 
   "month start iterator" should "generate month start dates" in {
     val xs = Days.monthStartIterator(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
-    println(xs)
     xs.length shouldBe 3
     xs.count(_.dayOfMonth == 1) shouldBe xs.length
   }
 
   it should "generate month start dates (inclusive)" in {
     val xs = Days.monthStartIteratorInclusive(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
-    println(xs)
     xs.length shouldBe 5
     xs.count(_.dayOfMonth == 1) shouldBe xs.length - 2
   }
 
-  "month end iterator" should "generate month start dates" in {
-    val xs = Days.monthStartIterator(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
-    println(xs)
+  "month end iterator" should "generate month end dates" in {
+    val xs = Days.monthEndIterator(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
     xs.length shouldBe 3
-    xs.count(_.dayOfMonth == 1) shouldBe xs.length
   }
 
-  it should "generate month start dates (inclusive)" in {
-    val xs = Days.monthStartIteratorInclusive(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
-    println(xs)
+  it should "generate month end dates (inclusive)" in {
+    val xs = Days.monthEndIteratorInclusive(Days(14, 5, 2015), Days(4, 8, 2015)).toIndexedSeq
     xs.length shouldBe 5
-    xs.count(_.dayOfMonth == 1) shouldBe xs.length - 2
   }
 
   "month end logic" should "find end of current month" in {
