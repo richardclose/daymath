@@ -27,7 +27,7 @@ class Days(val dayNumber: Int) extends AnyVal {
   def dowNumber: Int = ((dayNumber + 3) % 7) + 1
 
   /** Day of week */
-  def dayOfWeek: DayOfWeek = Days.DaysOfWeek(dowNumber - 1)
+  def dayOfWeek: DayOfWeek = Days.DAYS_OF_WEEK(dowNumber - 1)
 
   /** Day of month */
   def dayOfMonth: Int = Days.toDayOfMonth(dayNumber)
@@ -37,7 +37,41 @@ class Days(val dayNumber: Int) extends AnyVal {
 
   /** Year */
   def year: Int = Days.toYear(dayNumber)
+
+  /** Days instance which is count days after (or if count is
+    * negative, before) this date */
   def addDays(count: Int): Days = Days(dayNumber + count)
+
+  /** Add (or subtract) weekdays, taking account of weekends.
+    * If this is a weekend date, the count will start from the
+    * next (or previous) weekday.
+    */
+  def addWeekdays(count: Int): Days = {
+    val dow = dowNumber
+
+    // Adjustment to set current day to next (previous) weekday
+    val adj = dow match {
+      case Calendar.SATURDAY => if (count < 0) -1 else 2
+      case Calendar.SUNDAY => if (count < 0) -2 else 1
+      case _ => 0
+    }
+
+    // Adjust DOW to next (previous) weekday, then normalise such that Mon=0
+    val normDow = adj + (if (dow == Calendar.SUNDAY) 6 else dow - 2)
+
+    val weeks = count / 5
+    val rem = count % 5
+
+    // Add 2 days if adding the remainder includes a weekend
+    val includedWeekend =
+      if (normDow + rem < 0) -2
+      else if (normDow + rem > 4) 2
+      else 0
+
+    val diff = (weeks * 7) + adj + rem + includedWeekend
+
+    Days(dayNumber + diff)
+  }
 
   /** True if this date is after that date */
   def after(that: Days): Boolean = dayNumber > that.dayNumber
@@ -65,30 +99,50 @@ class Days(val dayNumber: Int) extends AnyVal {
   def firstDayOfNextMonth: Days = lastDayOfThisMonth.addDays(1)
 
   /** Next instance of the given day of week, including this date */
-  def nextOccurrenceOf(dow: Int): Days = {
+  def nextOccurrenceOfDow(dow: Int): Days = {
     val x = dowNumber - 1
     val diff = ((dow - 1 - x) + 7) % 7
     addDays(diff)
   }
 
   /** Next instance of the given day of week, including this date */
-  def nextOccurrenceOf(dow: DayOfWeek): Days = nextOccurrenceOf(dow.day)
+  def nextOccurrenceOf(dow: DayOfWeek): Days = nextOccurrenceOfDow(dow.dowNumber)
 
   override def toString: String = s"$dayOfMonth/$month/$year"
 }
 
-/** Day of week constants */
-sealed class DayOfWeek(val day: Int, val name: String) {
-  override def toString: String = name
+object DayOfWeek {
+  private val names = Seq("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+
+  def name(dowNumber: Int): String = {
+    if (dowNumber < 1 || dowNumber > 7)
+      "?"
+    else
+      names(dowNumber-1)
+  }
+
+  def isWeekday(dayOfWeek: DayOfWeek): Boolean =
+    !(dayOfWeek.dowNumber == Calendar.SUNDAY || dayOfWeek.dowNumber == Calendar.SATURDAY)
+
+  val SUNDAY: DayOfWeek = DayOfWeek(Calendar.SUNDAY)
+  val MONDAY: DayOfWeek = DayOfWeek(Calendar.MONDAY)
+  val TUESDAY: DayOfWeek = DayOfWeek(Calendar.TUESDAY)
+  val WEDNESDAY: DayOfWeek = DayOfWeek(Calendar.WEDNESDAY)
+  val THURSDAY: DayOfWeek = DayOfWeek(Calendar.THURSDAY)
+  val FRIDAY: DayOfWeek = DayOfWeek(Calendar.FRIDAY)
+  val SATURDAY: DayOfWeek = DayOfWeek(Calendar.SATURDAY)
+
+  val DAYS_OF_WEEK = Seq(SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY)
+
 }
 
-object Sunday extends DayOfWeek(Calendar.SUNDAY, "Sunday")
-object Monday extends DayOfWeek(Calendar.MONDAY, "Monday")
-object Tuesday extends DayOfWeek(Calendar.TUESDAY, "Tuesday")
-object Wednesday extends DayOfWeek(Calendar.WEDNESDAY, "Wednesday")
-object Thursday extends DayOfWeek(Calendar.THURSDAY, "Thursday")
-object Friday extends DayOfWeek(Calendar.FRIDAY, "Friday")
-object Saturday extends DayOfWeek(Calendar.SATURDAY, "Saturday")
+
+/** Day of week constants */
+case class DayOfWeek(dowNumber: Int) extends AnyVal {
+  override def toString: String = DayOfWeek.name(dowNumber)
+
+  def isWeekday: Boolean = DayOfWeek.isWeekday(this)
+}
 
 
 object Days {
@@ -105,7 +159,7 @@ object Days {
   /** Number of milliseconds in a day */
   val MillisPerDay: Long = 1000 * 60 * 60 * 24
 
-  val DaysOfWeek: Seq[DayOfWeek] = Seq(Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday)
+  val DAYS_OF_WEEK: Seq[DayOfWeek] = DayOfWeek.DAYS_OF_WEEK
 
   /** Number of days between two days */
   def daysBetween(d1: Days, d2: Days): Int = d2.dayNumber - d1.dayNumber

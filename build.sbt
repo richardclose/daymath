@@ -1,16 +1,17 @@
-name := "days"
+name := "daymath"
 
-version := "1.0"
+version := "1.1-SNAPSHOT"
 
 organization := "org.phasanix"
 
-scalaVersion := "2.11.6"
+crossScalaVersions := Seq("2.11.8", "2.12.2")
+
+scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq (
-  "org.scalatest" %% "scalatest" % "2.1.6" % "test",
-  "com.storm-enroute" %% "scalameter" % "0.6"
+  "org.scalatest"     %% "scalatest"  % "3.2.0-SNAP4"   % "test"
 )
 
-testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
+// testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
 
 parallelExecution in Test := false

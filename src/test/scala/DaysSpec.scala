@@ -1,6 +1,6 @@
 import java.time.LocalDate
 
-import org.phasanix.daymath.{Jdk8, Jdk7, Days}
+import org.phasanix.daymath.{DayOfWeek, Days, Jdk7, Jdk8}
 import org.scalatest._
 import java.text.SimpleDateFormat
 import java.util.TimeZone
@@ -8,7 +8,7 @@ import java.util.TimeZone
 class DaysSpec extends FlatSpec with Matchers {
 
   val jdk7dfmt = new SimpleDateFormat("yyyy/MM/dd z")
-  val utc = TimeZone.getTimeZone("UTC")
+  private val utc = TimeZone.getTimeZone("UTC")
 
   val dates = Seq(
     "1844/11/11",
@@ -43,6 +43,22 @@ class DaysSpec extends FlatSpec with Matchers {
     }
 
     diffs.filter(_ == false) shouldBe empty
+  }
+
+  it should "add weekdays correctly" in {
+    val d = Days(28, 7, 2016) // Thursday
+
+    d.dayOfWeek shouldBe DayOfWeek.THURSDAY
+
+    val d1 = d.addWeekdays(2)
+    val d2 = d.addWeekdays(7)
+    val d3 = d.addWeekdays(-4)
+    val d4 = d.addWeekdays(-11)
+
+    d1 shouldBe Days(1, 8, 2016) // expected: Monday 1/8/2016
+    d2 shouldBe Days(8, 8, 2016) // expected: Monday 8/8/2016
+    d3 shouldBe Days(22, 7, 2016) // Expected: Friday 22/7/2016
+    d4 shouldBe Days(13, 7, 2016) // Expected: Wednesday 13/7/2016
   }
 
   "month start iterator" should "generate month start dates" in {
