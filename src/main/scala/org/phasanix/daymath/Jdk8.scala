@@ -8,13 +8,17 @@ import java.time.LocalDate
  */
 object Jdk8 {
 
-  def toDays(ld: LocalDate): Days = {
-    Days(ld.getDayOfMonth, ld.getMonthValue, ld.getYear)
+  implicit class RichDays(val days: Days) {
+    def asLocalDate: LocalDate = {
+      val pd = days.asPackedDate
+      LocalDate.of(pd.year, pd.month, pd.day)
+    }
   }
 
-  def toLocalDate(days: Days): LocalDate = {
-    val pd = days.asPackedDate
-    LocalDate.of(pd.year, pd.month, pd.day)
+  implicit class RichLocalDate(val ld: LocalDate) extends AnyVal {
+    def asDays: Days = {
+      Days(ld.getDayOfMonth, ld.getMonthValue, ld.getYear)
+    }
   }
 
 }

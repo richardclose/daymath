@@ -1,6 +1,6 @@
 import java.time.LocalDate
 
-import org.phasanix.daymath.{DayOfWeek, Days, Jdk7, Jdk8}
+import org.phasanix.daymath._
 import org.scalatest._
 import java.text.SimpleDateFormat
 import java.util.TimeZone
@@ -21,31 +21,46 @@ class DaysSpec extends FlatSpec with Matchers {
     "2022/02/03",
     "2045/03/04")
 
-  "Days" should "convert correctly from java.util.Date to Days" in {
+  {
+    import Jdk7._
 
-    val diffs = for (dstr <- dates) yield {
-      val d = jdk7dfmt.parse(dstr + " UTC")
-      val days = Jdk7.toDays(d, utc)
-      (dstr, days.asMillis - d.getTime)
+    "Jdk7 conversions" should "convert java.util.Date -> Days" in {
+
+      val diffs = for (dstr <- dates) yield {
+        val d = jdk7dfmt.parse(dstr + " UTC")
+        val days = d.asDays(utc)
+        (dstr, days.asMillis - d.getTime)
+      }
+
+      diffs.filter(_._2 != 0L) shouldBe empty
     }
 
-    diffs.filter(_._2 != 0L) shouldBe empty
-  }
-
-  it should "convert correctly from java.time.LocalDate to Days" in {
-
-    val fmt = java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd")
-
-    val diffs = for (dstr <- dates) yield {
-      val ld = LocalDate.parse(dstr, fmt)
-      val days = Jdk8.toDays(ld)
-      days.dayOfMonth == ld.getDayOfMonth && days.month == ld.getMonthValue && days.year == ld.getYear
+    it should "convert Days -> java.util.Calendar -> Days" in {
+      val d = PackedDate(2011, 11, 12).asDays
+      val cal = d.asCalendar(utc)
+      cal.asDays.dayNumber shouldBe d.dayNumber
     }
 
-    diffs.filter(_ == false) shouldBe empty
   }
 
-  it should "add weekdays correctly" in {
+  {
+    import Jdk8._
+
+    "Jdk8 conversions" should "convert java.time.LocalDate -> Days" in {
+
+      val fmt = java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd")
+
+      val diffs = for (dstr <- dates) yield {
+        val ld = LocalDate.parse(dstr, fmt)
+        val days = ld.asDays
+        days.dayOfMonth == ld.getDayOfMonth && days.month == ld.getMonthValue && days.year == ld.getYear
+      }
+
+      diffs.filter(_ == false) shouldBe empty
+    }
+  }
+
+  "Day math" should "add weekdays correctly" in {
     val d = Days(28, 7, 2016) // Thursday
 
     d.dayOfWeek shouldBe DayOfWeek.THURSDAY
