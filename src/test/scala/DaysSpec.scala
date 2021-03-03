@@ -1,11 +1,12 @@
 import java.time.LocalDate
-
 import org.phasanix.daymath._
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+
 import java.text.SimpleDateFormat
 import java.util.TimeZone
 
-class DaysSpec extends FlatSpec with Matchers {
+class DaysSpec extends AnyFlatSpec with Matchers {
 
   val jdk7dfmt = new SimpleDateFormat("yyyy/MM/dd z")
   private val utc = TimeZone.getTimeZone("UTC")

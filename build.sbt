@@ -4,12 +4,10 @@ version := "1.0.2-SNAPSHOT"
 
 organization := "org.phasanix"
 
-crossScalaVersions := Seq("2.11.11", "2.12.2")
-
-scalaVersion := "2.12.2"
+scalaVersion := "2.13.5"
 
 libraryDependencies ++= Seq (
-  "org.scalatest"     %% "scalatest"  % "3.2.0-SNAP7"   % "test"
+  "org.scalatest"     %% "scalatest"  % "3.2.5"   % "test"
 )
 
 // testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
